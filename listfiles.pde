@@ -36,7 +36,7 @@ void recurseDir(ArrayList<File> a, String dir) {
   File file = new File(dir);
   if (file.isDirectory()) {
     // If you want to include directories in the list
-    // a.add(file);
+    a.add(file);
     File[] subfiles = file.listFiles();
     for (int i = 0; i < subfiles.length; i++) {
       // Call this function on all files in this directory

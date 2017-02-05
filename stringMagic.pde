@@ -43,10 +43,6 @@ void stringsMagic(ArrayList<File> list) {
   println("-----TIF-----");
   printArray(tif);
 
-  ArrayList<String> tif_psd = new ArrayList<String>();
-  ArrayList<String> tif_spp = new ArrayList<String>();
-  ArrayList<String> tif_nosrc = new ArrayList<String>();
-
   for (String t : tif) {
     if (psd.contains(t)) {
       tif_psd.add(t);

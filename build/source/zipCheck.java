@@ -11,6 +11,7 @@ import java.io.IOException;
 import java.util.zip.ZipEntry; 
 import java.util.zip.ZipInputStream; 
 import java.util.Date; 
+import gifAnimation.*; 
 
 import java.util.HashMap; 
 import java.util.ArrayList; 
@@ -32,29 +33,60 @@ public class zipCheck extends PApplet {
 
 
 
+
+ArrayList<File> allFiles;
+ArrayList<String> tif_psd = new ArrayList<String>();
+ArrayList<String> tif_spp = new ArrayList<String>();
+ArrayList<String> tif_nosrc = new ArrayList<String>();
+
+Gif loader;
+PImage warn, error, ok, img, ok_button, boxC, boxU;
+
 String pth, reply;
 
 String[] tif_nopsd;
 String[] tif_nossp;
 
+boolean loading = true;
+boolean clickable = false;
+
+Timer tim;
+Checkbox cbox;
+
 public void setup() {
+  
   selectInput("Select an archive to check","chosenZip");
+  loader = new Gif(this, "loader.gif");
+  loader.play();
+  warn = loadImage("warn.png");
+  ok = loadImage("ok.png");
+  error = loadImage("error.png");
+  ok_button = loadImage("ok-button.png");
+  boxC = loadImage("checkedbox.png");
+  boxU = loadImage("emptybox.png");
+  cbox = new Checkbox(width/2+30, height-40, 40, 40, "\u042f \u0432 \u043a\u0443\u0440\u0441\u0435, \u0442\u0430\u043c SPP");
+  imageMode(CENTER);
 
 }
 
 public void draw() {
-
+  background(255);
+  if (loading) {
+    image(loader , width/2 , height/2);
+  } else {
+    icons();
+  }
 }
 
 public void chosenZip(File selection) {
   if (selection == null) {
     println("Window was closed or the user hit cancel.");
+    exit();
   } else {
-    println("User selected " + selection.getAbsolutePath());
+    println(selection.getAbsolutePath());
     String name = selection.getName();
 
     pth = selection.getParent() + "\\" + name.substring(0, name.length()-4);
-    println(pth);
     UnzipUtility unzipper = new UnzipUtility();
     try{
       unzipper.unzip(selection.getAbsolutePath(),pth);
@@ -62,15 +94,99 @@ public void chosenZip(File selection) {
       // some errors occurred
       ex.printStackTrace();
     }
+
+    loading = false;
+
+    allFiles = listFilesRecursive(pth);
+
+    stringsMagic(allFiles);
+    tim = new Timer(2000);
+    while (!(allFiles.size()==0)){
+      if (selection.exists()) break;
+      for (File f : allFiles) {
+        if(f.delete()){};
+      }
+      allFiles = listFilesRecursive(pth);
+    }
+    // for( File f: allFiles) {
+    //   println(f.getName());
+    // }
   }
+}
 
-  ArrayList<File> allFiles = listFilesRecursive(pth);
+public void mousePressed() {
+  println("click: " + mouseX + " " + mouseY);
+  if (tim.done()) {
+    if (mouseX > width/4-75 && mouseY > height-40-25 && mouseX < width/4+75 && mouseY < height-40+25) {
+      if (cbox.check || tif_spp.size() == 0){
+        exit();
+      }
+    }
+    if (mouseX > cbox.x-cbox.w/2 && mouseY > cbox.y-cbox.h/2 && mouseX < cbox.x+cbox.w/2 && mouseY < cbox.y+cbox.h/2) {
+      cbox.check = true;
+    }
+  }
+}
+public void icons() {
+  ArrayList<String> msg = new ArrayList<String>();
+  if (tif_nosrc.size() > 0) {
+    msg.add("\u041d\u0435\u0442 \u0438\u0441\u0445\u043e\u0434\u043d\u0438\u043a\u043e\u0432 \u0434\u043b\u044f:");
+    img = error;
+    for (String t : tif_nosrc) {
+      msg.add(t);
+    }
+  } else if (tif_spp.size() > 0) {
+    msg.add("H\u0435\u0442 .PSD \u0434\u043b\u044f:");
+    img = warn;
+    for (String t : tif_spp) {
+      msg.add(t);
+    }
+    cbox.show();
+  } else {
+    msg.add("\u0412\u0441\u0435 \u043d\u043e\u0440\u043c, \u043c\u043e\u043b\u043e\u0434\u0435\u0446!");
+    img = ok;
+  }
+  image(img,width/4,height/3,200,200);
+  fill(0);
+  textSize(18);
+  for (int i=0 ; i < msg.size() ; i++) {
+    text(msg.get(i) ,width/2+30,height/4+i*30);
+  }
+  if (tim.done()) {
+    tint(255);
+  } else {
+    tint(66);
+  }
+  // delay(5000);
+  image(ok_button,width/4,height-40, 150, 50);
+  tint(255);
+}
 
-  stringsMagic(allFiles);
+class Timer {
+  int startms;
+  int sleep;
+  Timer(int _sleep) {
+    startms = millis();
+    sleep = _sleep;
+  }
+  public boolean done() {
+    if (millis() - startms >= sleep) return true;
+    else return false;
+  }
+}
 
-  // for( File f: allFiles) {
-  //   println(f.getName());
-  // }
+class Checkbox{
+  boolean check = false;
+  int x, y, w, h;
+  String label;
+  Checkbox (int _x, int _y, int _w, int _h, String _label) {
+    x= _x; y=_y; w= _w; h= _h; label= _label;
+  }
+  public void show() {
+    if (check) image(boxC,x,y,w,h);
+    else image(boxU,x,y,w,h);
+    text(label,x+w, y);
+  }
 }
 
 // This function returns all the files in a directory as an array of Strings
@@ -110,7 +226,7 @@ public void recurseDir(ArrayList<File> a, String dir) {
   File file = new File(dir);
   if (file.isDirectory()) {
     // If you want to include directories in the list
-    // a.add(file);
+    a.add(file);
     File[] subfiles = file.listFiles();
     for (int i = 0; i < subfiles.length; i++) {
       // Call this function on all files in this directory
@@ -164,10 +280,6 @@ public void stringsMagic(ArrayList<File> list) {
   printArray(spp);
   println("-----TIF-----");
   printArray(tif);
-
-  ArrayList<String> tif_psd = new ArrayList<String>();
-  ArrayList<String> tif_spp = new ArrayList<String>();
-  ArrayList<String> tif_nosrc = new ArrayList<String>();
 
   for (String t : tif) {
     if (psd.contains(t)) {
@@ -239,6 +351,7 @@ public class UnzipUtility {
         bos.close();
     }
 }
+  public void settings() {  size(600,400); }
   static public void main(String[] passedArgs) {
     String[] appletArgs = new String[] { "zipCheck" };
     if (passedArgs != null) {
