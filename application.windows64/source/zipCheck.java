@@ -46,6 +46,7 @@ String pth, reply;
 
 String[] tif_nopsd;
 String[] tif_nossp;
+String parent;
 
 boolean loading = true;
 boolean clickable = false;
@@ -53,7 +54,8 @@ boolean clickable = false;
 Timer tim;
 Checkbox cbox;
 
-PrintWriter outtxt;
+File outtxt;
+PrintWriter outtext;
 
 public void setup() {
   
@@ -66,7 +68,7 @@ public void setup() {
   ok_button = loadImage("ok-button.png");
   boxC = loadImage("checkedbox.png");
   boxU = loadImage("emptybox.png");
-  cbox = new Checkbox(width/2+30, height-40, 40, 40, "\u042f \u0432 \u043a\u0443\u0440\u0441\u0435, \u0442\u0430\u043c SPP");
+  cbox = new Checkbox(width/2+30, height-40, 40, 40, "\u042f \u0432 \u043a\u0443\u0440\u0441\u0435, \u0442\u0430\u043c \u0442\u043e\u043b\u044c\u043a\u043e SPP");
   imageMode(CENTER);
 }
 
@@ -80,13 +82,25 @@ public void draw() {
 }
 
 public void chosenZip(File selection) {
+  parent = selection.getParent();
   if (selection == null) {
     println("Window was closed or the user hit cancel.");
     exit();
   } else {
+    File[] contF = listFiles(parent);
+    for (int i=0 ; i < contF.length ; i++) {
+      switch (contF[i].getName()) {
+        case "OK.txt" :
+          contF[i].delete();
+        case "ERROR.txt" :
+          contF[i].delete();
+        case "WARN.txt" :
+          contF[i].delete();
+      }
+    }
+
     println(selection.getAbsolutePath());
     String name = selection.getName();
-
     pth = selection.getParent() + "\\" + name.substring(0, name.length()-4);
     UnzipUtility unzipper = new UnzipUtility();
     try{
@@ -101,7 +115,7 @@ public void chosenZip(File selection) {
     allFiles = listFilesRecursive(pth);
 
     stringsMagic(allFiles);
-    tim = new Timer(2000);
+    tim = new Timer(5000);
     File whi = new File(pth);
     while (!(allFiles.size()==0)){
       if (!(whi.exists())) break;
@@ -295,6 +309,22 @@ public void stringsMagic(ArrayList<File> list) {
   printArray(tif_psd);
   printArray(tif_spp);
   printArray(tif_nosrc);
+
+  if (tif_nosrc.size() > 0) {
+    outtext = createWriter(parent + "\\ERROR.txt");
+  } else if (tif_spp.size() > 0) {
+    outtext = createWriter(parent + "\\WARNINIG.txt");
+  } else {
+    outtext = createWriter(parent + "\\OK.txt");
+  }
+  outtext.println("-----PSD-----");
+  for (String s : psd) outtext.println(s);
+  outtext.println("-----SPP-----");
+  for (String s : spp) outtext.println(s);
+  outtext.println("-----TIF-----");
+  for (String s : tif) outtext.println(s);
+  outtext.flush();
+  outtext.close();
 }
 /**
  * This utility extracts files and directories of a standard zip file to

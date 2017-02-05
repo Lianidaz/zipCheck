@@ -42,7 +42,7 @@ void setup() {
   ok_button = loadImage("ok-button.png");
   boxC = loadImage("checkedbox.png");
   boxU = loadImage("emptybox.png");
-  cbox = new Checkbox(width/2+30, height-40, 40, 40, "Я в курсе, там SPP");
+  cbox = new Checkbox(width/2+30, height-40, 40, 40, "Я в курсе, там только SPP");
   imageMode(CENTER);
 }
 
@@ -89,7 +89,7 @@ void chosenZip(File selection) {
     allFiles = listFilesRecursive(pth);
 
     stringsMagic(allFiles);
-    tim = new Timer(2000);
+    tim = new Timer(5000);
     File whi = new File(pth);
     while (!(allFiles.size()==0)){
       if (!(whi.exists())) break;

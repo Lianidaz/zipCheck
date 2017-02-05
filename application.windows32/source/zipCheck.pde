@@ -20,6 +20,7 @@ String pth, reply;
 
 String[] tif_nopsd;
 String[] tif_nossp;
+String parent;
 
 boolean loading = true;
 boolean clickable = false;
@@ -27,7 +28,8 @@ boolean clickable = false;
 Timer tim;
 Checkbox cbox;
 
-PrintWriter outtxt;
+File outtxt;
+PrintWriter outtext;
 
 void setup() {
   size(600,400);
@@ -40,7 +42,7 @@ void setup() {
   ok_button = loadImage("ok-button.png");
   boxC = loadImage("checkedbox.png");
   boxU = loadImage("emptybox.png");
-  cbox = new Checkbox(width/2+30, height-40, 40, 40, "Я в курсе, там SPP");
+  cbox = new Checkbox(width/2+30, height-40, 40, 40, "Я в курсе, там только SPP");
   imageMode(CENTER);
 }
 
@@ -54,13 +56,25 @@ void draw() {
 }
 
 void chosenZip(File selection) {
+  parent = selection.getParent();
   if (selection == null) {
     println("Window was closed or the user hit cancel.");
     exit();
   } else {
+    File[] contF = listFiles(parent);
+    for (int i=0 ; i < contF.length ; i++) {
+      switch (contF[i].getName()) {
+        case "OK.txt" :
+          contF[i].delete();
+        case "ERROR.txt" :
+          contF[i].delete();
+        case "WARN.txt" :
+          contF[i].delete();
+      }
+    }
+
     println(selection.getAbsolutePath());
     String name = selection.getName();
-
     pth = selection.getParent() + "\\" + name.substring(0, name.length()-4);
     UnzipUtility unzipper = new UnzipUtility();
     try{
@@ -75,7 +89,7 @@ void chosenZip(File selection) {
     allFiles = listFilesRecursive(pth);
 
     stringsMagic(allFiles);
-    tim = new Timer(2000);
+    tim = new Timer(5000);
     File whi = new File(pth);
     while (!(allFiles.size()==0)){
       if (!(whi.exists())) break;
