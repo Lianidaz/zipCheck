@@ -55,4 +55,20 @@ void stringsMagic(ArrayList<File> list) {
   printArray(tif_psd);
   printArray(tif_spp);
   printArray(tif_nosrc);
+
+  if (tif_nosrc.size() > 0) {
+    outtext = createWriter(parent + "\\ERROR.txt");
+  } else if (tif_spp.size() > 0) {
+    outtext = createWriter(parent + "\\WARNINIG.txt");
+  } else {
+    outtext = createWriter(parent + "\\OK.txt");
+  }
+  outtext.println("-----PSD-----");
+  for (String s : psd) outtext.println(s);
+  outtext.println("-----SPP-----");
+  for (String s : spp) outtext.println(s);
+  outtext.println("-----TIF-----");
+  for (String s : tif) outtext.println(s);
+  outtext.flush();
+  outtext.close();
 }

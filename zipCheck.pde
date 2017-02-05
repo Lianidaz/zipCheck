@@ -20,6 +20,7 @@ String pth, reply;
 
 String[] tif_nopsd;
 String[] tif_nossp;
+String parent;
 
 boolean loading = true;
 boolean clickable = false;
@@ -27,7 +28,8 @@ boolean clickable = false;
 Timer tim;
 Checkbox cbox;
 
-PrintWriter outtxt;
+File outtxt;
+PrintWriter outtext;
 
 void setup() {
   size(600,400);
@@ -54,13 +56,25 @@ void draw() {
 }
 
 void chosenZip(File selection) {
+  parent = selection.getParent();
   if (selection == null) {
     println("Window was closed or the user hit cancel.");
     exit();
   } else {
+    File[] contF = listFiles(parent);
+    for (int i=0 ; i < contF.length ; i++) {
+      switch (contF[i].getName()) {
+        case "OK.txt" :
+          contF[i].delete();
+        case "ERROR.txt" :
+          contF[i].delete();
+        case "WARN.txt" :
+          contF[i].delete();
+      }
+    }
+
     println(selection.getAbsolutePath());
     String name = selection.getName();
-
     pth = selection.getParent() + "\\" + name.substring(0, name.length()-4);
     UnzipUtility unzipper = new UnzipUtility();
     try{
