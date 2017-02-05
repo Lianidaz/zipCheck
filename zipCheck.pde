@@ -27,9 +27,11 @@ boolean clickable = false;
 Timer tim;
 Checkbox cbox;
 
+PrintWriter outtxt;
+
 void setup() {
   size(600,400);
-  selectInput("Select an archive to check","chosenZip");
+  selectInput("Select a ZIP to check","chosenZip");
   loader = new Gif(this, "loader.gif");
   loader.play();
   warn = loadImage("warn.png");
@@ -40,7 +42,6 @@ void setup() {
   boxU = loadImage("emptybox.png");
   cbox = new Checkbox(width/2+30, height-40, 40, 40, "Я в курсе, там SPP");
   imageMode(CENTER);
-
 }
 
 void draw() {
@@ -75,8 +76,9 @@ void chosenZip(File selection) {
 
     stringsMagic(allFiles);
     tim = new Timer(2000);
+    File whi = new File(pth);
     while (!(allFiles.size()==0)){
-      if (selection.exists()) break;
+      if (!(whi.exists())) break;
       for (File f : allFiles) {
         if(f.delete()){};
       }
