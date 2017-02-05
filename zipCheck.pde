@@ -43,7 +43,7 @@ void chosenZip(File selection) {
 
   stringsMagic(allFiles);
 
-  for( File f: allFiles) {
-    println(f.getName());
-  }
+  // for( File f: allFiles) {
+  //   println(f.getName());
+  // }
 }
